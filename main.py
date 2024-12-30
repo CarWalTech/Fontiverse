@@ -13,6 +13,10 @@ PyQt6 -> User Interface
 Resources used:
 https://www.pythontutorial.net/pyqt/pyqt-qlabel/
 https://coderslegacy.com/python/pyqt6-adding-custom-fonts/
+
+Improvements to be made:
+Add way to add multiple fonts at, rather than one at at time
+Improve Error Handling
 """
 import sys
 from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout
@@ -28,22 +32,28 @@ class MainWindow(QWidget):
 
         # create a QLabel widget
         default_label = QLabel('This is a QLabel widget with default font')
-        font_changed_label = QLabel('This is a QLabel widget with Arcane Nine.otf Font')
+        font_changed_otf_label = QLabel('This is a QLabel widget with Arcane Nine.otf Font')
+        font_changed_ttf_label = QLabel('This is a QLabel widget with Frostbite.ttf Font')
 
-        families = self.get_font("test_fonts/Arcane Nine.otf")
+        otf_families = self.get_font("test_fonts/Arcane Nine.otf")
+        ttf_families = self.get_font("test_fonts/Frostbite.ttf")
 
-        print(f"Font: {families}")
         # Check if families != "Error" -> if so, then change the font. Otherwise, keep default font
         # Could use try and catch instead of checking for "Error" string but this is easier to track
-        if families != "Error":
-            font_changed_label.setFont(QFont(families[0], 80))
+        if otf_families != "Error":
+            font_changed_otf_label.setFont(QFont(otf_families[0], 16))
+        else:
+            print("Error Occured when loading font. Reverting to default font")
+        if ttf_families != "Error":
+            font_changed_ttf_label.setFont(QFont(ttf_families[0], 16))
         else:
             print("Error Occured when loading font. Reverting to default font")
 
         # place the widget on the window
         layout = QVBoxLayout()
         layout.addWidget(default_label)
-        layout.addWidget(font_changed_label)
+        layout.addWidget(font_changed_otf_label)
+        layout.addWidget(font_changed_ttf_label)
         self.setLayout(layout)
 
         # show the window
