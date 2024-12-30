@@ -32,12 +32,13 @@ class MainWindow(QWidget):
 
         families = self.get_font("test_fonts/Arcane Nine.otf")
 
-
+        print(f"Font: {families}")
         # Check if families != "Error" -> if so, then change the font. Otherwise, keep default font
         # Could use try and catch instead of checking for "Error" string but this is easier to track
         if families != "Error":
             font_changed_label.setFont(QFont(families[0], 80))
-
+        else:
+            print("Error Occured when loading font. Reverting to default font")
 
         # place the widget on the window
         layout = QVBoxLayout()
@@ -56,8 +57,9 @@ class MainWindow(QWidget):
         example: /test_fonts/Arane Nine.otf | /test_fonts/ (path), Arcane Nine (name), .otf (extension) 
          """
         # Add font to PyQt6 Font Database and get the corresponding ID
-        id = QFontDatabase.addApplicationFont("/test_fonts/Frostbite.ttf")
+        id = QFontDatabase.addApplicationFont(font_path)
         if id < 0: 
+            print(f"ID: {id}")
             return "Error"  # font could not be loaded so ID is -1. 
 
         # Find the font by the name (font family)
