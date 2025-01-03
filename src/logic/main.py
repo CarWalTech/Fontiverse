@@ -7,13 +7,17 @@ The following codebase is still being developed and is subject to change at any 
 
 
 Current Libraries/Modules installed
-PyQt6 -> User Interface
-csv   -> Reading in Font Data from list
+sys      -> General code stuff
+PyQt6    -> User Interface
+csv      -> Reading in Font Data from csv file
+requests -> Downloading fonts from DaFonts
 
 
 Resources used:
 https://www.pythontutorial.net/pyqt/pyqt-qlabel/
 https://coderslegacy.com/python/pyqt6-adding-custom-fonts/
+https://stackoverflow.com/questions/9419162/download-returned-zip-file-from-url
+
 
 Improvements to be made:
 Add way to add multiple fonts at, rather than one at at time
@@ -28,9 +32,9 @@ Reading CSV Data for Font List:
 """
 import sys
 import csv
-from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout
+import requests
 from PyQt6.QtGui import QFont, QFontDatabase
-
+from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout
 
 class MainWindow(QWidget):
     def __init__(self, *args, **kwargs):
@@ -38,8 +42,6 @@ class MainWindow(QWidget):
 
         # Default CSV size limit is too small.Increase size to system maxsize
         csv.field_size_limit(sys.maxsize)
-
-
 
         self.setWindowTitle('PyQt Label Widget')
         self.setGeometry(100, 100, 320, 210)
@@ -52,8 +54,8 @@ class MainWindow(QWidget):
         otf_families = self.get_font("src/resources/fonts/Arcane Nine.otf")
         ttf_families = self.get_font("src/resources/fonts/Frostbite.ttf")
 
-        # Check if families > -1 -> if so, then change the font. Otherwise, keep default font
-        # Could use try and catch instead of checking for "Error" string but this is easier to track
+        # Check if families != "Error" if so, then change the font. Otherwise, keep default font
+        # Could use try and catch instead of checking for "Error" string but this is easier to track and read
         if otf_families != "Error":
             font_changed_otf_label.setFont(QFont(otf_families[0], 16))
         else:
@@ -70,31 +72,16 @@ class MainWindow(QWidget):
         layout.addWidget(font_changed_ttf_label)
         self.setLayout(layout)
 
-
-
-
         # Reading the CSV and working with the data
         font_result = self.load_font_list_from_csv("src/resources/fonts/font_list.csv")
 
-
-
-        font = "rayman"
+        # Will seach for font with 'like' in name and download first font it finds
+        font = "like"
         result = self.find_font_from_csv_list(font_result, font)
-        for i in result: 
-            print(i.split(',')[0])
+        print(f"font result: {result[0].split(',')[1]}")
 
-        # for font in sorted(font_result):
-        #     print(font)
-
-        # self.find_font_from_list(font_result)
-        # self.find_font_in_file("src/resources/fonts/font_list.csv", "") # show the window
-        # font_list = self.load_font_list_from_csv("src/resources/fonts/font_list.csv") # show the window
-
-
-        # for i in 0..len(font_list):
-        #     if i == 10:
-        #         break
-        #     print(font_list[i])
+        self.get_font_from_url(self.sanitize_font_name(result[0].split(',')[1]))
+        
 
   
         self.show()
@@ -112,23 +99,40 @@ class MainWindow(QWidget):
         # Find the font by the name (font family)
         families = QFontDatabase.applicationFontFamilies(id)
         return families
-
         
     def load_font_list_from_csv(self, csv_path: str) -> list:
+        """Reads the locally saved DaFonts CSV file and converts it to a list for use"""
         csv_list = []
         with open(csv_path, newline='') as csv_file:
-            font_reader = csv.reader(csv_file, delimiter= ' ', quotechar='|')
+            font_reader = csv.reader(csv_file, delimiter= ',', quotechar='|')
             for row in font_reader:
                 csv_list.append(', '.join(row))
-
             return csv_list
 
     def find_font_from_csv_list(self, font_list:list, font:str) -> str:
+        """Searches the CSV List for specific fonts"""
         matching_fonts = []
         for i in font_list:
             if font in i:
                 matching_fonts.append(i)
         return matching_fonts
+
+    def sanitize_font_name(self, font) -> str:
+        """Cleans up Font to be parsed into the URL"""
+        temp_font = font.lower().lstrip().rstrip()
+        return temp_font.replace(" ", "_")
+
+    def get_font_from_url(self, font_name):
+        """Grabs the font from the download URL and downloads the zip"""
+        url = f"https://dl.dafont.com/dl/?f={font_name}"
+        print(url)
+        resp = requests.get(url, stream=True)
+        if resp.status_code == 200:
+            with open(f"src/resources/fonts/{font_name}.zip", 'wb') as f:
+                for chunk in resp.iter_content(chunk_size=512):
+                    f.write(chunk)
+        else:
+            print("Could not get font to download.")        
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
@@ -138,7 +142,3 @@ if __name__ == '__main__':
 
     # start the event loop
     sys.exit(app.exec())
-
-
-
-

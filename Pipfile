@@ -6,9 +6,9 @@ name = "pypi"
 [packages]
 sip = "*"
 pyqt6 = "*"
-requests = "*"
 bs4 = "*"
 html5lib = "*"
+requests = "*"
 
 [dev-packages]
 
