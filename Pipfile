@@ -9,6 +9,7 @@ pyqt6 = "*"
 bs4 = "*"
 html5lib = "*"
 requests = "*"
+selenium = "*"
 
 [dev-packages]
 
